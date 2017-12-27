@@ -7,7 +7,7 @@
 		exports["dyna-retry"] = factory(require("dyna-loops"));
 	else
 		root["dyna-retry"] = factory(root["dyna-loops"]);
-})(this, function(__WEBPACK_EXTERNAL_MODULE_2__) {
+})(this, function(__WEBPACK_EXTERNAL_MODULE_3__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -73,23 +73,11 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	__webpack_require__.p = "/dist/";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 3);
+/******/ 	return __webpack_require__(__webpack_require__.s = 4);
 /******/ })
 /************************************************************************/
 /******/ ([
 /* 0 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var DynaRetry_1 = __webpack_require__(1);
-exports.DynaRetry = DynaRetry_1.DynaRetry;
-exports.retry = DynaRetry_1.retry;
-
-
-/***/ }),
-/* 1 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -103,7 +91,7 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
     return t;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var dyna_loops_1 = __webpack_require__(2);
+var dyna_loops_1 = __webpack_require__(3);
 var DynaRetry = /** @class */ (function () {
     function DynaRetry(config) {
         this.config = {
@@ -170,16 +158,113 @@ exports.retry = function (config) {
 
 
 /***/ }),
+/* 1 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var DynaRetry_1 = __webpack_require__(0);
+exports.DynaRetry = DynaRetry_1.DynaRetry;
+exports.retry = DynaRetry_1.retry;
+var DynaRetrySync_1 = __webpack_require__(2);
+exports.DynaRetrySync = DynaRetrySync_1.DynaRetrySync;
+
+
+/***/ }),
 /* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __assign = (this && this.__assign) || Object.assign || function(t) {
+    for (var s, i = 1, n = arguments.length; i < n; i++) {
+        s = arguments[i];
+        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+            t[p] = s[p];
+    }
+    return t;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var DynaRetry_1 = __webpack_require__(0);
+var DynaRetrySync = /** @class */ (function () {
+    function DynaRetrySync(config) {
+        if (config === void 0) { config = {}; }
+        this.items = [];
+        this._isWorking = false;
+        this._paused = false; // for internal use only... used on onFail callback when we are waiting the object user to react with "retry", "skip" or "stop",
+        this.config = __assign({}, config);
+        if (!this.config.onFail) {
+            console.error('DynaRetrySync requires to implement the onFail function. See at http://www.github.com/aneldev/dyna-retry');
+        }
+    }
+    Object.defineProperty(DynaRetrySync.prototype, "isWorking", {
+        get: function () {
+            return this.isWorking;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(DynaRetrySync.prototype, "count", {
+        get: function () {
+            return this.items.length;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    DynaRetrySync.prototype.add = function (retryItem) {
+        this.items.push(retryItem);
+        this.start();
+    };
+    DynaRetrySync.prototype.start = function () {
+        var _this = this;
+        if (this._paused)
+            return;
+        if (this._isWorking)
+            return;
+        if (!this.items.length) {
+            this.config.onEmpty && this.config.onEmpty();
+            return;
+        }
+        this._isWorking = true;
+        DynaRetry_1.retry(this.items[0])
+            .then(function () {
+            _this.config.onResolve && _this.config.onResolve(_this.items[0]);
+            _this.items.shift();
+            _this._isWorking = false;
+            _this.start();
+        })
+            .catch(function (error) {
+            _this._isWorking = false;
+            _this._paused = true;
+            _this.config.onFail && _this.config.onFail(_this.items[0], error, function () {
+                _this._paused = false;
+                _this.start();
+            }, function () {
+                _this._paused = false;
+                _this.items.shift();
+                _this.start();
+            }, function () {
+                _this._paused = false;
+            });
+        });
+    };
+    return DynaRetrySync;
+}());
+exports.DynaRetrySync = DynaRetrySync;
+
+
+/***/ }),
+/* 3 */
 /***/ (function(module, exports) {
 
 module.exports = require("dyna-loops");
 
 /***/ }),
-/* 3 */
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(0);
+module.exports = __webpack_require__(1);
 
 
 /***/ })

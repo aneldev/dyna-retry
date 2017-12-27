@@ -1,2 +1,3 @@
 import { DynaRetry, IDynaRetryConfig, retry } from "./DynaRetry";
-export { DynaRetry, IDynaRetryConfig, retry };
+import { DynaRetrySync, IDynaRetrySyncConfig } from "./DynaRetrySync";
+export { DynaRetry, IDynaRetryConfig, retry, DynaRetrySync, IDynaRetrySyncConfig };

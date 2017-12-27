@@ -1,5 +1,6 @@
 export interface IDynaRetryConfig<TResolve> {
     operation: () => Promise<TResolve>;
+    data?: any;
     maxRetries?: number;
     retryTimeoutBaseMs?: number;
     increasePercentFrom?: number;

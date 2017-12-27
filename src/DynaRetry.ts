@@ -1,7 +1,8 @@
 import {random} from "dyna-loops";
 
 export interface IDynaRetryConfig<TResolve> {
-	operation: ()=>Promise<TResolve>;
+	operation: () => Promise<TResolve>;
+	data?: any,
 	maxRetries?: number;
 	retryTimeoutBaseMs?: number;
 	increasePercentFrom?: number;
@@ -14,7 +15,7 @@ export interface IDynaRetryConfig<TResolve> {
 
 export class DynaRetry<TResolve> {
 	private config: IDynaRetryConfig<TResolve> = {
-		operation: ()=>Promise.resolve(null),
+		operation: () => Promise.resolve(null),
 		maxRetries: 5,
 		retryTimeoutBaseMs: 500,
 		increasePercentFrom: 20,
