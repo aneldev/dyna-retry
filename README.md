@@ -19,7 +19,7 @@ retry({operation: () => fetch('http://www.example.com/my-data.json')})
 
 ```
 
-Define how may defines
+With progress callbacks
 
 ```
 retry({
@@ -48,7 +48,7 @@ The retry function takes an object with follow arguments, only the `operation` r
 
 |argument|type|default value|description|
 |----|----|----|----|
-|operation|()=>Promise|-|`operation` should be a function that starts the operations and returns the `Promise` of it.|
+|operation|()=>Promise|-|`operation` should be a function that starts the operation and returns the `Promise` of it.|
 |maxRetries|number|5|How many failed retries should be done before reject the `Promise`|
 |retryTimeoutBaseMs|number|500|The base of the delay in ms.|
 |increasePercentFrom/To|number(0...100(or more))|20/60|Add to the current delay a random percent range of the current delay. This algorithm is used when you don't override the `delayAlgorithm` (see next).|
