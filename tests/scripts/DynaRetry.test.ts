@@ -1,9 +1,7 @@
 import {retry} from "../../src";
 import * as fetch from "isomorphic-fetch";
-//import {Response} from "isomorphic-fetch";
 
 declare let jasmine: any, describe: any, expect: any, it: any;
-
 
 // help: https://facebook.github.io/jest/docs/expect.html
 
