@@ -1,7 +1,8 @@
 import { IDynaRetryConfig } from "./DynaRetry";
+export declare type TOnFail = (item: IDynaRetryConfig<any>, error: any, retry: () => void, skip: () => void, stop: () => void) => void;
 export interface IDynaRetrySyncConfig {
     onResolve?: (item: IDynaRetryConfig<any>) => void;
-    onFail?: (item: IDynaRetryConfig<any>, error: any, retry: () => void, skip: () => void, stop: () => void) => void;
+    onFail?: TOnFail;
     onEmpty?: () => void;
 }
 export declare class DynaRetrySync {
