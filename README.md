@@ -60,7 +60,7 @@ The retry function takes an object with follow arguments, only the `operation` r
 |retryTimeoutBaseMs|number|500|The base of the delay in ms.|
 |increasePercentFrom/To|number(0...100(or more))|20/60|Add to the current delay a random percent range of the current delay. This algorithm is used when you don't override the `delayAlgorithm` (see next).|
 |retryTimeoutMaxMs|number|1 * 60 * 1000, // one minute|Do not exceed this delay. This is applied even if your override the `delayAlgorithm` (see next).|
-|delayAlgorithm|(currentDelay: number, retryNo_number) => number|null|Write your own delay algorithm. Return the amount of next delay in ms.|
+|delayAlgorithm|(currentDelay: number, retryNo: number) => number|null|Write your own delay algorithm. Return the amount of next delay in ms.|
 |onRetry|(retryNo: number, cancel: () => void) => void|null|Callback on each retry. The number of retries is passed. the `cancel` function is passed in order to cancel and stop the operation explicitly (will be rejected with the last error).|
 |onFail|(retryNo: number, cancel: () => void) => void|null|Callback for each fail. The number of retries is passed. the `cancel` function is passed in order to cancel and stop the operation explicitly (will be rejected with the last error).|
 

@@ -8,7 +8,7 @@ export interface IDynaRetryConfig<TResolve> {
 	increasePercentFrom?: number;
 	increasePercentTo?: number;
 	retryTimeoutMaxMs?: number;
-	delayAlgorithm?: (currentDelay: number, retryNo_number) => number;
+	delayAlgorithm?: (currentDelay: number, retryNo: number) => number;
 	onRetry?: (retryNo: number, cancel: () => void) => void;
 	onFail?: (retryNo: number, cancel: () => void) => void;
 }
