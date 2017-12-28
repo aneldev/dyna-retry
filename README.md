@@ -167,7 +167,7 @@ The events are defined as callbacks in the configuration object that is passed t
 
 ### onFail: (item: IDynaRetryConfig<any>, error: any, retry: () => void, skip: () => void, stop: () => void)
 
-**REQUIRED to be implemented.** Required because there is need to implement the logic: "what is a retry failed?".
+**REQUIRED to be implemented.** Required because there is need to implement the logic: "what if a retry failed?".
 
 Is called when a `retry` is rejected as the `maxRetries` are exceeded.
 
