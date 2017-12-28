@@ -11,11 +11,11 @@ export interface IDynaRetryConfig<TResolve> {
     onFail?: (retryNo: number, cancel: () => void) => void;
 }
 export declare class DynaRetry<TResolve> {
-    private config;
-    private retryNo;
-    private currentDelay;
+    private _config;
+    private _retryNo;
+    private _currentDelay;
     constructor(config: IDynaRetryConfig<TResolve>);
-    private getDelay();
+    private _getDelay();
     start(): Promise<TResolve>;
 }
 export declare const retry: <TResolve>(config: IDynaRetryConfig<TResolve>) => Promise<TResolve>;

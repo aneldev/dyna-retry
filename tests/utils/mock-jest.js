@@ -5,6 +5,8 @@ if (typeof global === 'undefined' && typeof window !== 'undefined') global = win
 
 let HIDE_SUCCESS_VALIDATION = false;
 
+// init section
+
 global._mockJest = null;
 
 global.clearTest = () => {
@@ -42,6 +44,8 @@ global.expect = (expectValue) => {
 	return comparisons(expectValue);
 };
 
+// start and functions section
+
 let comparisons = (expectValue, not = false) => {
 	return {
 		get not() {
@@ -51,7 +55,7 @@ let comparisons = (expectValue, not = false) => {
 			let result = expectValue === toBeValue;
 			if (not) result = !result;
 			if (result) {
-				if (!HIDE_SUCCESS_VALIDATION) console.log('        Success, === equal value');
+				if (!HIDE_SUCCESS_VALIDATION) console.log(`        Success, equal value [${expectValue} === ${toBeValue}]`);
 				global._mockJest.passed++;
 			}
 			else {
@@ -63,6 +67,7 @@ let comparisons = (expectValue, not = false) => {
 };
 
 let startTimer = null;
+
 function startTests() {
 	if (startTimer) clearTimeout(startTimer);
 	startTimer = setTimeout(executeTests, 100);
@@ -72,14 +77,14 @@ function executeTests() {
 	console.log('### TESTs begin');
 	let descriptions = [].concat(global._mockJest.descriptions);
 
-	const processTheNextDescription = ()=>{
+	const processTheNextDescription = () => {
 		let description = descriptions.shift();
 		if (description) {
 			executeADescription(description, () => {
 				processTheNextDescription();
 			});
 		}
-		else{
+		else {
 			finished();
 		}
 	};
@@ -94,13 +99,14 @@ function executeADescription(description, cbCompleted) {
 
 	executeIts(its, () => {
 		console.log('Description::: Finished:', description.description);
+		console.log('');
 		cbCompleted();
 	});
 }
 
 function executeIts(its, cbCompleted) {
 	let it = its.shift();
-	if (!it){
+	if (!it) {
 		cbCompleted();
 		return;
 	}
@@ -110,15 +116,15 @@ function executeIts(its, cbCompleted) {
 		it.cbTest();
 		executeIts(its, cbCompleted);
 	}
-	else{
-		it.cbTest(()=>{
+	else {
+		it.cbTest(() => {
 			executeIts(its, cbCompleted);
 		});
 	}
 }
 
 function finished() {
-	let report = '### All TEST finished, results:' + ' ' + 'errors:' + ' ' + global._mockJest.errors + ' ' + 'passed:' + ' ' + global._mockJest.passed;
+	let report = 'All TEST finished, results:' + ' ' + 'errors:' + ' ' + global._mockJest.errors + ' ' + 'passed:' + ' ' + global._mockJest.passed;
 	console.log('');
 	if (global._mockJest.errors) {
 		console.log(' xx   xx ');

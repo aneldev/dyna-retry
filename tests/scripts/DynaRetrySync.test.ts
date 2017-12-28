@@ -40,7 +40,7 @@ describe('Dyna Retry Sync - basic', () => {
 
 	it('should stop because of unresolved item', (done: Function) => {
 		// some hack for the test is required
-		((retrySync as any).config as IDynaRetrySyncConfig).onFail = (item: IDynaRetryConfig<any>, error: any, retry: () => void, skip: () => void, stop: () => void) => {
+		((retrySync as any)._config as IDynaRetrySyncConfig).onFail = (item: IDynaRetryConfig<any>, error: any, retry: () => void, skip: () => void, stop: () => void) => {
 			expect(retrySync.count).toBe(3);
 			stop();
 			done();
@@ -56,12 +56,42 @@ describe('Dyna Retry Sync - basic', () => {
 
 	it('should start it again and resolve the rest', (done: Function) => {
 		// some hack for the test is required
-		((retrySync as any).config as IDynaRetrySyncConfig).onEmpty = () => {
+		((retrySync as any)._config as IDynaRetrySyncConfig).onEmpty = () => {
 			expect(retrySync.count).toBe(0);
 			done();
 		};
 		retrySync.start();
 	});
+});
+
+describe('Dyna Retry Sync - start later', () => {
+	const retrySync: DynaRetrySync = new DynaRetrySync({
+		active: false,
+		onFail: (item: IDynaRetryConfig<any>, error: any, retry: () => void, skip: () => void, stop: () => void) => undefined,
+	});
+
+	it('adds some hard jobs to resolve', () => {
+		retrySync.add({operation: fetchData('api.search-space-cake', 1), maxRetries: 3}); // this is the only easy job here
+		retrySync.add({operation: fetchData('api.holly-glory', 1), maxRetries: 3});
+		retrySync.add({operation: fetchData('api.dispute-of-notation', 1), maxRetries: 3});
+		expect(retrySync.count).toBe(3);
+	});
+
+	it('should still have the retries after 1 sec', (done: Function) => {
+		setTimeout(() => {
+			expect(retrySync.count).toBe(3);
+			done();
+		}, 5000);
+	});
+
+	it('should start the execution of retries and solve them immediately', (done: Function) => {
+		retrySync.start();
+		setTimeout(() => {
+			expect(retrySync.count).toBe(0);
+			done();
+		}, 100)
+	});
+
 });
 
 describe('Dyna Retry Sync - multiple retries', () => {
@@ -78,7 +108,7 @@ describe('Dyna Retry Sync - multiple retries', () => {
 
 	it('should resolve only the one (find-your-self)', (done: Function) => {
 		// some hack for the test is required
-		((retrySync as any).config as IDynaRetrySyncConfig).onFail = (item: IDynaRetryConfig<any>, error: any, retry: () => void, skip: () => void, stop: () => void) => {
+		((retrySync as any)._config as IDynaRetrySyncConfig).onFail = (item: IDynaRetryConfig<any>, error: any, retry: () => void, skip: () => void, stop: () => void) => {
 			expect(retrySync.count).toBe(2); // the sing-the-smelly-cat && find-the-lord-of-the-rings are pending
 			retry();
 			done();
@@ -87,7 +117,7 @@ describe('Dyna Retry Sync - multiple retries', () => {
 
 	it('should only the last one pending', (done: Function) => {
 		// some hack for the test is required
-		((retrySync as any).config as IDynaRetrySyncConfig).onFail = (item: IDynaRetryConfig<any>, error: any, retry: () => void, skip: () => void, stop: () => void) => {
+		((retrySync as any)._config as IDynaRetrySyncConfig).onFail = (item: IDynaRetryConfig<any>, error: any, retry: () => void, skip: () => void, stop: () => void) => {
 			expect(retrySync.count).toBe(1); // is find-the-lord-of-the-rings is still pending
 			retry();
 			done();
@@ -96,7 +126,7 @@ describe('Dyna Retry Sync - multiple retries', () => {
 
 	it('should only the last one still pending', (done: Function) => {
 		// some hack for the test is required
-		((retrySync as any).config as IDynaRetrySyncConfig).onFail = (item: IDynaRetryConfig<any>, error: any, retry: () => void, skip: () => void, stop: () => void) => {
+		((retrySync as any)._config as IDynaRetrySyncConfig).onFail = (item: IDynaRetryConfig<any>, error: any, retry: () => void, skip: () => void, stop: () => void) => {
 			expect(retrySync.count).toBe(1); // is find-the-lord-of-the-rings is still pending
 			retry();
 			done();
@@ -105,15 +135,12 @@ describe('Dyna Retry Sync - multiple retries', () => {
 
 	it('should nothing pending', (done: Function) => {
 		// some hack for the test is required
-		((retrySync as any).config as IDynaRetrySyncConfig).onEmpty = () => {
+		((retrySync as any)._config as IDynaRetrySyncConfig).onEmpty = () => {
 			expect(retrySync.count).toBe(0);
 			done();
 		};
 		retrySync.start();
 	});
 
-	it('next', () => {
-		expect(true).toBe(true);
-	});
 });
 

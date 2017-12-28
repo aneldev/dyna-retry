@@ -14,7 +14,7 @@ export interface IDynaRetryConfig<TResolve> {
 }
 
 export class DynaRetry<TResolve> {
-	private config: IDynaRetryConfig<TResolve> = {
+	private _config: IDynaRetryConfig<TResolve> = {
 		operation: () => Promise.resolve(null),
 		maxRetries: 5,
 		retryTimeoutBaseMs: 500,
@@ -22,27 +22,27 @@ export class DynaRetry<TResolve> {
 		increasePercentTo: 60,
 		retryTimeoutMaxMs: 1 * 60 * 1000, // one minute
 	};
-	private retryNo: number = 0;
-	private currentDelay: number = 0;
+	private _retryNo: number = 0;
+	private _currentDelay: number = 0;
 
 	constructor(config: IDynaRetryConfig<TResolve>) {
-		this.config = {
-			...this.config,
+		this._config = {
+			...this._config,
 			...config,
 		};
 	}
 
-	private getDelay(): number {
-		if (this.config.delayAlgorithm) {
-			this.currentDelay = this.config.delayAlgorithm(this.currentDelay, this.retryNo);
+	private _getDelay(): number {
+		if (this._config.delayAlgorithm) {
+			this._currentDelay = this._config.delayAlgorithm(this._currentDelay, this._retryNo);
 		}
 		else {
-			this.currentDelay +=
-				(this.currentDelay | this.config.retryTimeoutBaseMs)
-				* (random(this.config.increasePercentFrom, this.config.increasePercentTo) / 100);
+			this._currentDelay +=
+				(this._currentDelay | this._config.retryTimeoutBaseMs)
+				* (random(this._config.increasePercentFrom, this._config.increasePercentTo) / 100);
 		}
-		if (this.currentDelay > this.config.retryTimeoutMaxMs) this.currentDelay = this.config.retryTimeoutMaxMs;
-		return this.currentDelay;
+		if (this._currentDelay > this._config.retryTimeoutMaxMs) this._currentDelay = this._config.retryTimeoutMaxMs;
+		return this._currentDelay;
 	}
 
 	public start(): Promise<TResolve> {
@@ -56,15 +56,15 @@ export class DynaRetry<TResolve> {
 					reject(lastError);
 					return;
 				}
-				this.retryNo++;
-				this.config.onRetry && this.config.onRetry(this.retryNo, cancelIt);
-				this.config.operation()
+				this._retryNo++;
+				this._config.onRetry && this._config.onRetry(this._retryNo, cancelIt);
+				this._config.operation()
 					.then(resolve)
 					.catch((error: any) => {
 						lastError = error;
-						this.config.onFail && this.config.onFail(this.retryNo, cancelIt);
-						if (this.config.maxRetries === null || this.retryNo < this.config.maxRetries) {
-							setTimeout(tryIt, this.getDelay());
+						this._config.onFail && this._config.onFail(this._retryNo, cancelIt);
+						if (this._config.maxRetries === null || this._retryNo < this._config.maxRetries) {
+							setTimeout(tryIt, this._getDelay());
 						}
 						else {
 							reject(error)

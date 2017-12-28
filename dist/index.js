@@ -94,7 +94,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var dyna_loops_1 = __webpack_require__(3);
 var DynaRetry = /** @class */ (function () {
     function DynaRetry(config) {
-        this.config = {
+        this._config = {
             operation: function () { return Promise.resolve(null); },
             maxRetries: 5,
             retryTimeoutBaseMs: 500,
@@ -102,22 +102,22 @@ var DynaRetry = /** @class */ (function () {
             increasePercentTo: 60,
             retryTimeoutMaxMs: 1 * 60 * 1000,
         };
-        this.retryNo = 0;
-        this.currentDelay = 0;
-        this.config = __assign({}, this.config, config);
+        this._retryNo = 0;
+        this._currentDelay = 0;
+        this._config = __assign({}, this._config, config);
     }
-    DynaRetry.prototype.getDelay = function () {
-        if (this.config.delayAlgorithm) {
-            this.currentDelay = this.config.delayAlgorithm(this.currentDelay, this.retryNo);
+    DynaRetry.prototype._getDelay = function () {
+        if (this._config.delayAlgorithm) {
+            this._currentDelay = this._config.delayAlgorithm(this._currentDelay, this._retryNo);
         }
         else {
-            this.currentDelay +=
-                (this.currentDelay | this.config.retryTimeoutBaseMs)
-                    * (dyna_loops_1.random(this.config.increasePercentFrom, this.config.increasePercentTo) / 100);
+            this._currentDelay +=
+                (this._currentDelay | this._config.retryTimeoutBaseMs)
+                    * (dyna_loops_1.random(this._config.increasePercentFrom, this._config.increasePercentTo) / 100);
         }
-        if (this.currentDelay > this.config.retryTimeoutMaxMs)
-            this.currentDelay = this.config.retryTimeoutMaxMs;
-        return this.currentDelay;
+        if (this._currentDelay > this._config.retryTimeoutMaxMs)
+            this._currentDelay = this._config.retryTimeoutMaxMs;
+        return this._currentDelay;
     };
     DynaRetry.prototype.start = function () {
         var _this = this;
@@ -130,15 +130,15 @@ var DynaRetry = /** @class */ (function () {
                     reject(lastError);
                     return;
                 }
-                _this.retryNo++;
-                _this.config.onRetry && _this.config.onRetry(_this.retryNo, cancelIt);
-                _this.config.operation()
+                _this._retryNo++;
+                _this._config.onRetry && _this._config.onRetry(_this._retryNo, cancelIt);
+                _this._config.operation()
                     .then(resolve)
                     .catch(function (error) {
                     lastError = error;
-                    _this.config.onFail && _this.config.onFail(_this.retryNo, cancelIt);
-                    if (_this.config.maxRetries === null || _this.retryNo < _this.config.maxRetries) {
-                        setTimeout(tryIt, _this.getDelay());
+                    _this._config.onFail && _this._config.onFail(_this._retryNo, cancelIt);
+                    if (_this._config.maxRetries === null || _this._retryNo < _this._config.maxRetries) {
+                        setTimeout(tryIt, _this._getDelay());
                     }
                     else {
                         reject(error);
@@ -190,12 +190,14 @@ var DynaRetry_1 = __webpack_require__(0);
 var DynaRetrySync = /** @class */ (function () {
     function DynaRetrySync(config) {
         if (config === void 0) { config = {}; }
-        this.items = [];
+        this._items = [];
         this._isWorking = false;
+        this._active = false; // object user's start and stop handle
         this._paused = false; // for internal use only... used on onFail callback when we are waiting the object user to react with "retry", "skip" or "stop",
-        this.config = __assign({}, config);
-        if (!this.config.onFail) {
-            console.error('DynaRetrySync requires to implement the onFail function. See at http://www.github.com/aneldev/dyna-retry');
+        this._config = __assign({ active: true }, config);
+        this._active = this._config.active;
+        if (!this._config.onFail) {
+            console.error('DynaRetrySync requires to implement the onFail function. See at https://github.com/aneldev/dyna-retry#onfail-item-idynaretryconfig-error-any-retry---void-skip---void-stop---void');
         }
     }
     Object.defineProperty(DynaRetrySync.prototype, "isWorking", {
@@ -207,43 +209,52 @@ var DynaRetrySync = /** @class */ (function () {
     });
     Object.defineProperty(DynaRetrySync.prototype, "count", {
         get: function () {
-            return this.items.length;
+            return this._items.length;
         },
         enumerable: true,
         configurable: true
     });
     DynaRetrySync.prototype.add = function (retryItem) {
-        this.items.push(retryItem);
-        this.start();
+        this._items.push(retryItem);
+        this.processNext();
     };
     DynaRetrySync.prototype.start = function () {
+        this._active = true;
+        this.processNext();
+    };
+    DynaRetrySync.prototype.stop = function () {
+        this._active = false;
+    };
+    DynaRetrySync.prototype.processNext = function () {
         var _this = this;
+        if (!this._active)
+            return;
         if (this._paused)
             return;
         if (this._isWorking)
             return;
-        if (!this.items.length) {
-            this.config.onEmpty && this.config.onEmpty();
+        if (!this._items.length) {
+            this._config.onEmpty && this._config.onEmpty();
             return;
         }
         this._isWorking = true;
-        DynaRetry_1.retry(this.items[0])
+        DynaRetry_1.retry(this._items[0])
             .then(function () {
-            _this.config.onResolve && _this.config.onResolve(_this.items[0]);
-            _this.items.shift();
+            _this._config.onResolve && _this._config.onResolve(_this._items[0]);
+            _this._items.shift();
             _this._isWorking = false;
-            _this.start();
+            _this.processNext();
         })
             .catch(function (error) {
             _this._isWorking = false;
             _this._paused = true;
-            _this.config.onFail && _this.config.onFail(_this.items[0], error, function () {
+            _this._config.onFail && _this._config.onFail(_this._items[0], error, function () {
                 _this._paused = false;
-                _this.start();
+                _this.processNext();
             }, function () {
                 _this._paused = false;
-                _this.items.shift();
-                _this.start();
+                _this._items.shift();
+                _this.processNext();
             }, function () {
                 _this._paused = false;
             });
