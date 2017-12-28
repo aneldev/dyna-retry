@@ -81,7 +81,7 @@ describe('Dyna Retry Sync - start later', () => {
 		setTimeout(() => {
 			expect(retrySync.count).toBe(3);
 			done();
-		}, 5000);
+		}, 1000);
 	});
 
 	it('should start the execution of retries and solve them immediately', (done: Function) => {
