@@ -225,6 +225,13 @@ var DynaRetrySync = /** @class */ (function () {
     DynaRetrySync.prototype.stop = function () {
         this._active = false;
     };
+    Object.defineProperty(DynaRetrySync.prototype, "active", {
+        get: function () {
+            return this._active;
+        },
+        enumerable: true,
+        configurable: true
+    });
     DynaRetrySync.prototype.processNext = function () {
         var _this = this;
         if (!this._active)

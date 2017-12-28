@@ -18,5 +18,6 @@ export declare class DynaRetrySync {
     add(retryItem: IDynaRetryConfig<any>): void;
     start(): void;
     stop(): void;
+    readonly active: boolean;
     processNext(): void;
 }
