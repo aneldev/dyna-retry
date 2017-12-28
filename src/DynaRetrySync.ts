@@ -55,7 +55,7 @@ export class DynaRetrySync {
 		return this._active;
 	}
 
-	public processNext(): void {
+	private processNext(): void {
 		if (!this._active) return;
 		if (this._paused) return;
 		if (this._isWorking) return;

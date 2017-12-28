@@ -19,5 +19,5 @@ export declare class DynaRetrySync {
     start(): void;
     stop(): void;
     readonly active: boolean;
-    processNext(): void;
+    private processNext();
 }
