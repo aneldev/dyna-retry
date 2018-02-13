@@ -1,5 +1,6 @@
 import {retry} from "../../src";
 import * as fetch from "isomorphic-fetch";
+import {IError} from "dyna-interfaces";
 
 declare let jasmine: any, describe: any, expect: any, it: any;
 
@@ -14,10 +15,6 @@ describe('Dyna Retry - retry 5 and succeed', () => {
 
 	interface IData {
 		name: string
-	}
-
-	interface IError {
-		message: string
 	}
 
 	let operation = (): Promise<IData> => {
