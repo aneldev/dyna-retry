@@ -1,6 +1,6 @@
 {
   "name": "dyna-retry",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Retry mechanism with Promises",
   "repository": {
     "type": "git",
