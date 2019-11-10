@@ -1,10 +1,10 @@
+import "jest";
+
 import {IDynaRetrySyncConfig} from "../../src";
 import {DynaRetrySync} from "../../src";
 import {IDynaRetryConfig} from "../../src";
 
 const CONSOLE_DEBUG: boolean = false;
-
-declare let jasmine: any, describe: any, expect: any, it: any;
 
 // help: https://facebook.github.io/jest/docs/expect.html
 

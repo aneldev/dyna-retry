@@ -1,19 +1,20 @@
-export interface IDynaRetryConfig<TResolve> {
+export interface IDynaRetryConfig<TResolve = void> {
     operation: () => Promise<TResolve>;
-    data?: any;
-    maxRetries?: number;
+    maxRetries?: number | null;
     retryTimeoutBaseMs?: number;
     increasePercentFrom?: number;
     increasePercentTo?: number;
     retryTimeoutMaxMs?: number;
     delayAlgorithm?: (currentDelay: number, retryNo: number) => number;
     onRetry?: (retryNo: number, cancel: () => void) => void;
-    onFail?: (retryNo: number, cancel: () => void) => void;
+    onFail?: (error: any, retryNo: number, cancel: () => void) => void;
 }
-export declare class DynaRetry<TResolve> {
-    private _config;
+export declare class DynaRetry<TResolve = void> {
+    private readonly _config;
     private _retryNo;
     private _currentDelay;
+    private _isWorking;
+    private readonly _bufferedStarts;
     constructor(config: IDynaRetryConfig<TResolve>);
     private _getDelay();
     start(): Promise<TResolve>;

@@ -48,7 +48,6 @@
   "author": "Anel dev",
   "license": "MIT",
   "dependencies": {
-    "babel-polyfill": "^6.9.1",
     "dyna-loops": "^1.4.3"
   },
   "devDependencies": {
