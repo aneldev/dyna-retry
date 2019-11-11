@@ -39,7 +39,6 @@ var DynaRetry = /** @class */ (function () {
         this._isWorking = false;
         this._bufferedStarts = [];
         this._config = __assign(__assign({}, this._config), config);
-        console.debug('config', config);
     }
     DynaRetry.prototype._getDelay = function () {
         return this._currentDelay = this._config.delayAlgorithm(this._currentDelay, this._retryNo);
