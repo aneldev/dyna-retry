@@ -78,7 +78,7 @@ describe('retry - retry 3 and fail', () => {
 
 	it('should retry 3 times', (done: Function) => {
 		retry({
-			operation: operation,
+			operation,
 			maxRetries: 3,
 			onRetry: () => retried++,
 			onFail: () => failed++,
@@ -116,7 +116,7 @@ describe('retry - cancel retry', () => {
 
 	it('should cancel on 10th fail', (done: Function) => {
 		retry({
-			operation: operation,
+			operation,
 			retryTimeoutBaseMs: 10,
 			maxRetries: null, // retry for ever
 			onRetry: (retryNo: number) => {

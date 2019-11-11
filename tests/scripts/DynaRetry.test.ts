@@ -1,4 +1,5 @@
 import "jest";
+jasmine.DEFAULT_TIMEOUT_INTERVAL = 4000;
 
 import {DynaRetry} from "../../src";
 

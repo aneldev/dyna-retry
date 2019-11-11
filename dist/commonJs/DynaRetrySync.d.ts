@@ -1,8 +1,8 @@
 import { IDynaRetryConfig } from "./DynaRetry";
-export declare type TOnFail = (item: IDynaRetryConfig<any>, error: any, retry: () => void, skip: () => void, stop: () => void) => void;
+export declare type TOnFail = (item: IDynaRetryConfig, error: any, retry: () => void, skip: () => void, stop: () => void) => void;
 export interface IDynaRetrySyncConfig {
     active?: boolean;
-    onResolve?: (item: IDynaRetryConfig<any>) => void;
+    onResolve?: (item: IDynaRetryConfig) => void;
     onFail?: TOnFail;
     onEmpty?: () => void;
 }
@@ -13,11 +13,11 @@ export declare class DynaRetrySync {
     private _active;
     private _paused;
     constructor(config?: IDynaRetrySyncConfig);
-    readonly isWorking: boolean;
-    readonly count: number;
-    add(retryItem: IDynaRetryConfig<any>): void;
+    get isWorking(): boolean;
+    get count(): number;
+    add(retryItem: IDynaRetryConfig): void;
     start(): void;
     stop(): void;
-    readonly active: boolean;
-    private processNext();
+    get active(): boolean;
+    private processNext;
 }

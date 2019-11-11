@@ -15,8 +15,8 @@ The retry come is three versions
 ## Interface
 
 ```
-interface IDynaRetryConfig<TResolve> {
-	operation: () => Promise<TResolve>;
+interface IDynaRetryConfig<> {
+	operation: () => Promise<void>;
 	maxRetries?: number;                    // Default: 5. Set null for endless retries. 
 	retryTimeoutBaseMs?: number;            // Default: 500ms
 	increasePercentFrom?: number;           // Default: 20
@@ -30,7 +30,7 @@ interface IDynaRetryConfig<TResolve> {
 
 ## Methods
 
-### start(): Promise<TResolve>
+### start(): Promise<void>
 
 The promise is resolved when the operation() is resolved.
 
@@ -169,12 +169,12 @@ Example
 
 // instantiate the DynaRetrySync
 const retrySync: DynaRetrySync = new DynaRetrySync({
-    onFail: (item: IDynaRetryConfig<any>, error: any, retry: () => void, skip: () => void, stop: () => void) => {
+    onFail: (item: IDynaRetryConfig, error: any, retry: () => void, skip: () => void, stop: () => void) => {
         // implement here the logic, what if a retry exceeded it's `maxRetries` and it’s rejected
         item.data;    // (optional) here is the data where is passed on `retry` configuration
         retry();     // or skip() or stop()
     },
-    onResolve: (item: IDynaRetryConfig<any>) => {
+    onResolve: (item: IDynaRetryConfig) => {
         item.data;    // (optional)
         // this is the resolved item
     },
@@ -198,7 +198,7 @@ retrySync.add({
 
 ## Methods
 
-### add(retryItem: IDynaRetryConfig<any>): void
+### add(retryItem: IDynaRetryConfig): void
 
 Add a `retry` item, exactly with the same way as you do with the `retry` function.
 
@@ -227,7 +227,7 @@ How many items are pending.
 ## events
 
 The events that are passed to the constructor are defined as callbacks in the configuration object. 
-### onFail: (item: IDynaRetryConfig<any>, error: any, retry: () => void, skip: () => void, stop: () => void)
+### onFail: (item: IDynaRetryConfig, error: any, retry: () => void, skip: () => void, stop: () => void)
 
 **REQUIRED to be implemented.** Required because there is need to implement the logic: "what is a retry failed?".
 

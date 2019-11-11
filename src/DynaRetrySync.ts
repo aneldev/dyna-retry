@@ -1,17 +1,21 @@
 import {IDynaRetryConfig, retry} from "./DynaRetry";
 
-export type TOnFail = (item: IDynaRetryConfig<any>, error: any, retry: () => void, skip: () => void, stop: () => void) => void;
+export type TOnFail = (item: IDynaRetryConfig, error: any, retry: () => void, skip: () => void, stop: () => void) => void;
 
 export interface IDynaRetrySyncConfig {
 	active?: boolean;
-	onResolve?: (item: IDynaRetryConfig<any>) => void;
+	onResolve?: (item: IDynaRetryConfig) => void;
 	onFail?: TOnFail;
 	onEmpty?: () => void;
 }
 
+type Required<T> = {
+	[P in keyof T]-?: T[P];
+};
+
 export class DynaRetrySync {
-	private _config: IDynaRetrySyncConfig;
-	private _items: IDynaRetryConfig<any>[] = [];
+	private _config: Required<IDynaRetrySyncConfig>;
+	private _items: IDynaRetryConfig[] = [];
 	private _isWorking: boolean = false;
 	private _active: boolean = false;   // object user's start and stop handle
 	private _paused: boolean = false;   // for internal use only... used on onFail callback when we are waiting the object user to react with "retry", "skip" or "stop",
@@ -20,7 +24,7 @@ export class DynaRetrySync {
 		this._config = {
 			active: true,
 			...config,
-		};
+		} as any;
 
 		this._active = this._config.active;
 
@@ -37,7 +41,7 @@ export class DynaRetrySync {
 		return this._items.length;
 	}
 
-	public add(retryItem: IDynaRetryConfig<any>): void {
+	public add(retryItem: IDynaRetryConfig): void {
 		this._items.push(retryItem);
 		this.processNext();
 	}

@@ -12,22 +12,39 @@ export interface IDynaRetryConfig<TResolve = void> {
 	onFail?: (error: any, retryNo: number, cancel: () => void) => void;
 }
 
+type TRequireAll<T> = {
+	[P in keyof T]-?: T[P];
+};
+
 export class DynaRetry<TResolve = void> {
-	private readonly _config: IDynaRetryConfig<TResolve> = {
-		operation: () => Promise.resolve(null),
+	private readonly _config: TRequireAll<IDynaRetryConfig<TResolve>> = {
 		maxRetries: 5,
+		operation: () => new Promise<TResolve>(r => r()),
 		retryTimeoutBaseMs: 500,
 		increasePercentFrom: 20,
 		increasePercentTo: 60,
-		retryTimeoutMaxMs: 1 * 60 * 1000, // one minute
+		retryTimeoutMaxMs: 60 * 1000 * 1, // minutes
+		delayAlgorithm: (currentDelay, retryNo) => {
+			if (currentDelay === this._config.retryTimeoutMaxMs) return currentDelay;
+			let output =
+				currentDelay +
+				(
+					(currentDelay | this._config.retryTimeoutBaseMs)
+					* (random(this._config.increasePercentFrom, this._config.increasePercentTo) / 100)
+				);
+			if (output > this._config.retryTimeoutMaxMs) output = this._config.retryTimeoutMaxMs;
+			return output;
+		},
+		onRetry: () => undefined,
+		onFail: () => undefined,
 	};
 	private _retryNo: number = 0;
 	private _currentDelay: number = 0;
 
 	private _isWorking = false;
-	private readonly _bufferedStarts: Array<{ resolve: <TResolve>(TResolve) => void, reject: (error: any) => void }> = [];
+	private readonly _bufferedStarts: Array<{ resolve: (r?: TResolve) => void, reject: (error: any) => void }> = [];
 
-	constructor(config: IDynaRetryConfig<TResolve>) {
+	constructor(readonly config: IDynaRetryConfig<TResolve>) {
 		this._config = {
 			...this._config,
 			...config,
@@ -35,16 +52,7 @@ export class DynaRetry<TResolve = void> {
 	}
 
 	private _getDelay(): number {
-		if (this._config.delayAlgorithm) {
-			this._currentDelay = this._config.delayAlgorithm(this._currentDelay, this._retryNo);
-		}
-		else {
-			this._currentDelay +=
-				(this._currentDelay | this._config.retryTimeoutBaseMs)
-				* (random(this._config.increasePercentFrom, this._config.increasePercentTo) / 100);
-		}
-		if (this._currentDelay > this._config.retryTimeoutMaxMs) this._currentDelay = this._config.retryTimeoutMaxMs;
-		return this._currentDelay;
+		return this._currentDelay = this._config.delayAlgorithm(this._currentDelay, this._retryNo);
 	}
 
 	public start(): Promise<TResolve> {
@@ -55,7 +63,7 @@ export class DynaRetry<TResolve = void> {
 		const cancelIt = () => cancel = true;
 		let lastError: any = null;
 
-		return new Promise<TResolve>((resolve: (TResolve) => void, reject: (error: any) => void) => {
+		return new Promise((resolve: (r?: TResolve) => void, reject: (error: any) => void) => {
 			const tryIt = () => {
 				if (cancel) {
 					reject(lastError);
@@ -64,10 +72,13 @@ export class DynaRetry<TResolve = void> {
 				this._retryNo++;
 				this._config.onRetry && this._config.onRetry(this._retryNo, cancelIt);
 				this._config.operation()
-					.then(data => {
+					.then((r) => {
 						this._isWorking = false;
-						resolve(data);
-						while (this._bufferedStarts.length) this._bufferedStarts.shift().resolve(data);
+						resolve(r);
+						while (this._bufferedStarts.length) {
+							const bufferedStart = this._bufferedStarts.shift();
+							if (bufferedStart) bufferedStart.resolve(r);
+						}
 					})
 					.catch((error: any) => {
 						lastError = error;
@@ -78,7 +89,10 @@ export class DynaRetry<TResolve = void> {
 						else {
 							this._isWorking = false;
 							reject(error);
-							while (this._bufferedStarts.length) this._bufferedStarts.shift().reject(error);
+							while (this._bufferedStarts.length) {
+								const bufferedStart = this._bufferedStarts.shift();
+								if (bufferedStart) bufferedStart.reject(error);
+							}
 						}
 					});
 			};
