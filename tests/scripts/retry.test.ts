@@ -40,9 +40,9 @@ describe('retry - retry 5 and succeed', () => {
 				done();
 			})
 			.catch((error: IError) => {
-				expect(false).toBe(true);
-				done();
-			});
+        fail(error);
+        done();
+      });
 	});
 
 	it('should use the onXxxxx callbacks', () => {
@@ -84,9 +84,9 @@ describe('retry - retry 3 and fail', () => {
 			onFail: () => failed++,
 		})
 			.then((data: IData) => {
-				expect(false).toBe(true);
-				done();
-			})
+        fail('Should not resolve');
+        done();
+      })
 			.catch((error: IError) => {
 				expect(error.message).toBe(`Couldn't fetch`);
 				done();
@@ -104,38 +104,37 @@ describe('retry - cancel retry', () => {
 	let retried: number = 0;
 	let failed: number = 0;
 
-	interface IData {
-		name: string
-	}
+  interface IData {
+    name: string
+  }
 
-	interface IError {
-		message: string
-	}
+  interface IError {
+    message: string
+  }
 
-	let operation = (): Promise<IData> => Promise.reject({message: 'it failed'});
+  let operation = (): Promise<IData> => Promise.reject({message: 'it failed'});
 
-	it('should cancel on 10th fail', (done: Function) => {
-		retry({
-			operation,
-			retryTimeoutBaseMs: 10,
-			maxRetries: null, // retry for ever
-			onRetry: (retryNo: number) => {
-				retries = retryNo;
-				retried++;
-			},
-			onFail: (retryNo: number, cancel: () => void) => {
-				failed++;
-				if (failed === 10) cancel();
-			},
-		})
-			.then((data: IData) => {
-				expect(false).toBe(true);
-				done();
-			})
-			.catch((error: IError) => {
-				expect(error.message).toBe(`it failed`);
-				done();
-			});
+  it('should cancel on 10th fail', (done: () => void) => {
+    retry({
+      operation,
+      retryTimeoutBaseMs: 10,
+      maxRetries: null, // retry for ever
+      onRetry: (retryNo: number) => {
+        retries = retryNo;
+        retried++;
+      },
+      onFail: (error: any, retryNo: number, cancel: (errorMessage?: string) => void) => {
+        failed++;
+        if (failed === 10) cancel();
+      },
+    })
+      .then((data: IData) => {
+        fail('Should not resolve');
+      })
+      .catch((error: IError) => {
+        expect(error.message).toBe(`Canceled`);
+      })
+      .then(done);
 	});
 
 	it('should use the onXxxxx callbacks', () => {

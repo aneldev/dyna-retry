@@ -44,17 +44,56 @@ describe('Dyna Retry - Simple error handling', () => {
 				await new Promise(r => setTimeout(r, 50));
 				throw {message: "General error"};
 			},
-			onFail: () => failed++,
-		});
+      onFail: () => failed++,
+    });
 
-		loadImages.start()
-			.then(() => {
-				fail({message: "It doesn't be resolved"})
-			})
-			.catch(error => {
-				expect(error.message).toBe("General error");
-				expect(failed).toBe(3);
-			})
-			.then(() => done());
-	});
+    loadImages.start()
+      .then(() => {
+        fail({message: "It shouldn't be resolved"})
+      })
+      .catch(error => {
+        expect(error.message).toBe("General error");
+        expect(failed).toBe(3);
+      })
+      .then(() => done());
+  });
+});
+
+describe('Dyna Retry - Cancel', () => {
+  it('should cancel a endless retry', (done: Function) => {
+    let failed = 0;
+    let retried = 0;
+
+    const loadImages = new DynaRetry({
+      maxRetries: null,
+      retryTimeoutBaseMs: 100,
+      increasePercentFrom: 0,
+      increasePercentTo: 0,
+      operation: async () => {
+        await new Promise(r => setTimeout(r, 50));
+        retried++;
+        if (retried === 3) loadImages.cancel('User Load is canceled');
+        throw {message: "General error"};
+      },
+      onCancel: async () => {
+        expect(retried).toBe(3);
+        expect(failed).toBe(3);
+        await new Promise(r => setTimeout(r, 500));
+        expect(retried).toBe(3);
+        expect(failed).toBe(3);
+      },
+      onFail: () => failed++,
+    });
+
+    loadImages.start()
+      .then(() => {
+        fail({message: "It shouldn't be resolved"})
+      })
+      .catch(error => {
+        expect(retried).toBe(3);
+        expect(failed).toBe(3);
+        expect(error.message).toBe('User Load is canceled');
+      })
+      .then(() => done());
+  });
 });

@@ -1,4 +1,5 @@
-import {IDynaRetryConfig, retry} from "./DynaRetry";
+import {IDynaRetryConfig} from "./DynaRetry";
+import {retry} from "./retry";
 
 export type TOnFail = (item: IDynaRetryConfig, error: any, retry: () => void, skip: () => void, stop: () => void) => void;
 

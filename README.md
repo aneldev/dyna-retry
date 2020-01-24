@@ -10,7 +10,7 @@ The retry come is three versions
 - `retry` method (wraps the `DynaRetry`)
 - `DynaRetrySync` class
 
-# DynaRetry class
+# DynaRetry
 
 ## Interface
 
@@ -22,9 +22,9 @@ interface IDynaRetryConfig<> {
 	increasePercentFrom?: number;           // Default: 20
 	increasePercentTo?: number;             // Default: 60
 	retryTimeoutMaxMs?: number;             // Default: 60000 (1 minute)
-	delayAlgorithm?: (currentDelay: number, retryNo: number) => number; // Write your own delay algorithm. Return the amount of the next delay in ms
-	onRetry?: (retryNo: number, cancel: () => void) => void;            // Informative callback
-	onFail?: (error: any, retryNo: number, cancel: () => void) => void; // Informative callback
+	delayAlgorithm?: (currentDelay: number, retryNo: number) => number;                      // Write your own delay algorithm. Return the amount of the next delay in ms
+	onRetry?: (retryNo: number, cancel: (errorMessage?: string) => void) => void;            // Informative callback
+	onFail?: (error: any, retryNo: number, cancel: (errorMessage?: string) => void) => void; // Informative callback
 }
 ```
 
@@ -56,16 +56,26 @@ This ensures that the `start()` will be always resolved when the connection is r
 
 In the meantime, if the `operation()` fails, if the connection couldn't be done, the `DynaRetry` will retry to execute it. The `start()` will be fulfilled when it's ready. 
 
+### cancel(errorMessage?: string): void
+
+The retry operation(s) will be canceled.
+
+That means that the promise will be rejected with error.
+
 ## Example
 
 ```
 const loadUser = new DynaRetry({
     operation: () => fetch('http://www.example.com'),
+    onCancel: async () => console.log('Is canceled, preparation before rejection'),
 });
 
 loadUser.start()
     .then(user => console.log('Fetched user data', user))
     .catch(error => console.log("Last retry's error', error));
+    
+// leter you could
+loadUser.cancel('Fetch user date is canceled');
 
 ```
 
@@ -125,8 +135,8 @@ The retry function takes an object with following arguments, only the `operation
 |increasePercentFrom/To|number(0...100(or more))|20/60|Add to the current delay a random percent range of the current delay. This algorithm is used when you don't override the `delayAlgorithm` (see next).|
 |retryTimeoutMaxMs|number|1 * 60 * 1000, // one minute|Do not exceed this delay. This is applied even if your override the `delayAlgorithm` (see next).|
 |delayAlgorithm|(currentDelay: number, retryNo_number) => number|null|Write your own delay algorithm. Return the amount of the next delay in ms.|
-|onRetry|(retryNo: number, cancel: () => void) => void|null|Callback on each retry. The number of retries is passed. the `cancel` function is passed in order to cancel and stop the operation explicitly (will be rejected with the last error).|
-|onFail|(error: any, retryNo: number, cancel: () => void) => void|null|Callback for each fail. The number of the retries is passed. the `cancel` function is passed in order to cancel and stop the operation explicitly (will be rejected with the last error).|
+|onRetry|(retryNo: number, cancel: (errorMessage?: string) => void) => void|null|Callback on each retry. The number of retries is passed. the `cancel` function is passed in order to cancel and stop the operation explicitly (will be rejected with the last error).|
+|onFail|(error: any, retryNo: number, cancel: (errorMessage?: string) => void) => void|null|Callback for each fail. The number of the retries is passed. the `cancel` function is passed in order to cancel and stop the operation explicitly (will be rejected with the last error).|
 
 ## Why random delay?
 
