@@ -9,7 +9,7 @@ var __assign = (this && this.__assign) || function () {
     };
     return __assign.apply(this, arguments);
 };
-import { retry } from "./DynaRetry";
+import { retry } from "./retry";
 var DynaRetrySync = /** @class */ (function () {
     function DynaRetrySync(config) {
         if (config === void 0) { config = {}; }

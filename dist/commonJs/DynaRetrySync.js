@@ -11,7 +11,7 @@ var __assign = (this && this.__assign) || function () {
     return __assign.apply(this, arguments);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var DynaRetry_1 = require("./DynaRetry");
+var retry_1 = require("./retry");
 var DynaRetrySync = /** @class */ (function () {
     function DynaRetrySync(config) {
         if (config === void 0) { config = {}; }
@@ -70,7 +70,7 @@ var DynaRetrySync = /** @class */ (function () {
             return;
         }
         this._isWorking = true;
-        DynaRetry_1.retry(this._items[0])
+        retry_1.retry(this._items[0])
             .then(function () {
             _this._config.onResolve && _this._config.onResolve(_this._items[0]);
             _this._items.shift();
