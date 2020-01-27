@@ -20,7 +20,8 @@ export declare class DynaRetry<TResolve = void> {
     private _isWorking;
     private readonly _bufferedStarts;
     constructor(config: IDynaRetryConfig<TResolve>);
-    private _getDelay;
     start(): Promise<TResolve>;
     cancel(errorMessage?: string): void;
+    get isWorking(): boolean;
+    private _getDelay;
 }

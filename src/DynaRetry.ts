@@ -54,10 +54,6 @@ export class DynaRetry<TResolve = void> {
     };
   }
 
-  private _getDelay(): number {
-    return this._currentDelay = this._config.delayAlgorithm(this._currentDelay, this._retryNo);
-  }
-
   public start(): Promise<TResolve> {
     if (this._isWorking) return new Promise<TResolve>((resolve, reject) => this._bufferedStarts.push({resolve, reject}));
     this._isWorking = true;
@@ -118,6 +114,14 @@ export class DynaRetry<TResolve = void> {
     if (!this._isWorking) return;
     this._canceled = true;
     this._canceledErrorMessage = errorMessage || 'Canceled';
+  }
+
+  public get isWorking(): boolean {
+    return this._isWorking;
+  }
+
+  private _getDelay(): number {
+    return this._currentDelay = this._config.delayAlgorithm(this._currentDelay, this._retryNo);
   }
 }
 
