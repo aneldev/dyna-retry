@@ -81,9 +81,6 @@ var DynaRetry = /** @class */ (function () {
         this._bufferedStarts = [];
         this._config = __assign(__assign({}, this._config), config);
     }
-    DynaRetry.prototype._getDelay = function () {
-        return this._currentDelay = this._config.delayAlgorithm(this._currentDelay, this._retryNo);
-    };
     DynaRetry.prototype.start = function () {
         var _this = this;
         if (this._isWorking)
@@ -153,6 +150,16 @@ var DynaRetry = /** @class */ (function () {
             return;
         this._canceled = true;
         this._canceledErrorMessage = errorMessage || 'Canceled';
+    };
+    Object.defineProperty(DynaRetry.prototype, "isWorking", {
+        get: function () {
+            return this._isWorking;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    DynaRetry.prototype._getDelay = function () {
+        return this._currentDelay = this._config.delayAlgorithm(this._currentDelay, this._retryNo);
     };
     return DynaRetry;
 }());
